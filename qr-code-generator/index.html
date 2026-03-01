@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      background: #f2f2f2;
+    }
+    #qrcode-container {
+      /* Added a container to hold both QR code and download button */
+      margin: 20px auto;
+      width: fit-content;
+    }
+    #qrcode {
+      padding: 10px;
+      background: white;
+      margin-bottom: 10px; /* Space between QR and button */
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    button {
+      background: #007bff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    /* Style for the new download button */
+    #download-link button {
+        background: #28a745; /* A distinct color for download */
+    }
+    #download-link button:hover {
+        background: #1e7e34;
+    }
+  </style>
+</head>
+<body>
+  <h1>QR Code Generator</h1>
+  <input type="text" id="text" placeholder="Enter URL or Text" size="40">
+  <br>
+  <button onclick="generateQR()">Generate QR Code</button>
+  
+  <div id="qrcode-container">
+    <div id="qrcode"></div>
+    <div id="download-link"></div> 
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script>
+    let qr; // Keep track of the QRCode object (though we mostly interact with its container)
+
+    function generateQR() {
+      const textInput = document.getElementById("text");
+      const text = textInput.value.trim();
+      const qrContainer = document.getElementById("qrcode");
+      const downloadLinkContainer = document.getElementById("download-link");
+
+      // Clear old QR code and download link
+      qrContainer.innerHTML = "";
+      downloadLinkContainer.innerHTML = "";
+
+      if (text === "") {
+        alert("Please enter some text or URL!");
+        return;
+      }
+
+      // Generate new QR code
+      // We use a slight delay with setTimeout to ensure the canvas is fully rendered before trying to access it.
+      qr = new QRCode(qrContainer, {
+        text: text,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      
+      // Add the download button after a brief delay
+      setTimeout(() => {
+        // The qrcode.js library renders the QR code as a <img> element inside the 'qrcode' div if it's not supported, 
+        // but typically as a <canvas> element. We'll look for the canvas element.
+        const canvas = qrContainer.querySelector('canvas');
+
+        if (canvas) {
+          // Get the base64 image data from the canvas
+          const dataURL = canvas.toDataURL("image/png");
+
+          // Create the <a> element for the download link
+          const downloadAnchor = document.createElement('a');
+          downloadAnchor.href = dataURL;
+          downloadAnchor.download = "qrcode_" + Date.now() + ".png"; // Set a dynamic filename
+          downloadAnchor.style.textDecoration = 'none'; // Ensure no extra styling
+
+          // Create the <button> element to act as the visual download button
+          const downloadButton = document.createElement('button');
+          downloadButton.textContent = "Download QR Code (PNG)";
+
+          // Append the button to the anchor, and the anchor to the container
+          downloadAnchor.appendChild(downloadButton);
+          downloadLinkContainer.appendChild(downloadAnchor);
+        }
+      }, 50); // Small delay to ensure canvas rendering is complete
+    }
+  </script>
+</body>
+</html>
